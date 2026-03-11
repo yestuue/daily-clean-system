@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Clean - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <div id="login-screen" class="login-screen">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="logo.png" alt="Daily Clean Logo" style="height: 40px; margin-bottom: 15px;">
+                <h2>Admin Login</h2>
+                <p>Enter your credentials to access the portal</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Login to Dashboard</button>
+            </form>
+            <div id="login-error" class="error-msg"></div>
+            <p class="login-hint">Default: admin / dailyclean2025</p>
+        </div>
+    </div>
+
+    <div id="dashboard-app" class="dashboard-app hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="logo.png" alt="DC Logo" style="height: 30px;">
+                <span class="brand-text">Admin Panel</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="#" class="nav-link" data-view="bookings"><i class="fa-solid fa-clipboard-list"></i> Bookings</a>
+                <a href="#" class="nav-link" data-view="customers"><i class="fa-solid fa-users"></i> Loyalty Members</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn-logout"><i class="fa-solid fa-power-off"></i> Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                </div>
+                <div class="topbar-right">
+                    <div id="connection-status" class="status-indicator">
+                        <span class="dot"></span> Online
+                    </div>
+                    <div class="user-profile">
+                        <span>Daily Clean Admin</span>
+                        <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                
+                <div id="view-dashboard" class="view active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-blue"><i class="fa-solid fa-receipt"></i></div>
+                            <div class="stat-info">
+                                <h3>Total Bookings</h3>
+                                <p id="stat-total-bookings" class="stat-number">...</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-orange"><i class="fa-solid fa-clock"></i></div>
+                            <div class="stat-info">
+                                <h3>Pending Orders</h3>
+                                <p id="stat-pending" class="stat-number">...</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-green"><i class="fa-solid fa-award"></i></div>
+                            <div class="stat-info">
+                                <h3>Loyalty Members</h3>
+                                <p id="stat-loyalty" class="stat-number">...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-header space-between">
+                            <h3>Live Booking Activity</h3>
+                            <span class="badge">Real-time</span>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Services</th>
+                                        <th>Created</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-bookings-list">
+                                    <tr><td colspan="5" class="text-center">Loading live data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-bookings" class="view">
+                    <div class="card overflow-visible">
+                        <div class="card-header space-between">
+                            <div>
+                                <h3>Order Management</h3>
+                                <p class="card-subtitle">Manage statuses and view details</p>
+                            </div>
+                            <button id="refresh-bookings" class="btn btn-outline btn-sm"><i class="fa-solid fa-rotate"></i> Refresh List</button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID / Time</th>
+                                            <th>Customer Details</th>
+                                            <th>Services & Preference</th>
+                                            <th>Address & Notes</th>
+                                            <th>Status Control</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="all-bookings-list">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-customers" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Loyalty Program Database</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fa-solid fa-info-circle"></i> These customers have signed up for your newsletter and point system via the landing page.
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email Address</th>
+                                        <th>Joined On</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="loyalty-list">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Synchronizing database...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
