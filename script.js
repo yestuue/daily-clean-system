@@ -21,57 +21,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 2. Time & Store Status Logic
 function initTimeLogic() {
-    // Lagos is WAT (UTC+1)
-    const getWATTime = () => {
-        const now = new Date();
-        const watOffset = 1 * 60 * 60 * 1000;
-        const localOffset = now.getTimezoneOffset() * 60 * 1000;
-        return new Date(now.getTime() + localOffset + watOffset);
-    };
-
-    const watNow = getWATTime();
-    const day = watNow.getDay(); // 0 = Sun, 1 = Mon ... 6 = Sat
+    // 1. Get current Lagos time for the promo banner
+    const watNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Africa/Lagos"}));
+    const day = watNow.getDay();
     const hour = watNow.getHours();
 
-    let isOpen = false;
-    if (day >= 1 && day <= 6) {
-        // Mon-Sat: 7am to 8pm (20:00)
-        if (hour >= 7 && hour < 20) isOpen = true;
-    } else if (day === 0) {
-        // Sun: 9am to 5pm (17:00)
-        if (hour >= 9 && hour < 17) isOpen = true;
-    }
-
-    // Update Badge
+    // 2. Force the Status Badge to always be Green/Open
     const badge = document.getElementById('status-badge');
     if (badge) {
         const textSpan = badge.querySelector('.status-text');
-        if (isOpen) {
-            badge.classList.add('open');
-            badge.classList.remove('closed');
-            textSpan.textContent = 'Currently Open';
-        } else {
-            badge.classList.add('closed');
-            badge.classList.remove('open');
-            textSpan.textContent = 'Currently Closed';
+        badge.classList.add('open');
+        badge.classList.remove('closed');
+        if (textSpan) {
+            textSpan.textContent = 'Available to Book';
         }
     }
 
-    // Update Promo Banner (Show if Mon-Sat, before 12pm)
+    // 3. Update Promo Banner (Only shows Mon-Sat, before 12pm)
     const banner = document.getElementById('promo-banner');
     if (banner && day >= 1 && day <= 6 && hour < 12) {
         banner.classList.remove('hidden');
     }
 
-    const closeBanner = document.querySelector('.close-banner');
-    if (closeBanner) {
-        closeBanner.addEventListener('click', () => {
+    // 4. Handle Closing the Banner
+    const closeBtn = document.querySelector('.close-banner');
+    if (closeBtn && banner) {
+        closeBtn.addEventListener('click', () => {
             banner.classList.add('hidden');
         });
     }
-
-    // Randomize "Orders Today" counter
-    const randomOrders = document.getElementById('random-orders');
     if (randomOrders) {
         // random number between 30 and 120
         randomOrders.textContent = Math.floor(Math.random() * (120 - 30 + 1)) + 30;
