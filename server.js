@@ -118,7 +118,11 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 app.get('/api/admin/dashboard', async (req, res) => {
-    if (!req.headers.authorization) return res.status(401).json({ error: 'Unauthorized' });
+    // Check for the specific "Daily Clean" key
+    const authHeader = req.headers.authorization;
+    if (!authHeader || authHeader !== 'Bearer mock-token-1') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     try {
         const total = await pool.query('SELECT count(*) as count FROM bookings');
@@ -134,9 +138,14 @@ app.get('/api/admin/dashboard', async (req, res) => {
         res.status(500).json({ error: 'Stats fetch failed' });
     }
 });
-
 app.get('/api/admin/bookings', async (req, res) => {
-    if (!req.headers.authorization) return res.status(401).json({ error: 'Unauthorized' });
+    const authHeader = req.headers.authorization;
+    
+    // This matches the security you just added to the dashboard
+    if (!authHeader || authHeader !== 'Bearer mock-token-1') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
         const result = await pool.query('SELECT * FROM bookings ORDER BY created_at DESC');
         res.json(result.rows);
@@ -145,7 +154,14 @@ app.get('/api/admin/bookings', async (req, res) => {
     }
 });
 
+// Update booking status
 app.put('/api/admin/bookings/:id/status', async (req, res) => {
+    // Add this check for total security
+    const authHeader = req.headers.authorization;
+    if (!authHeader || authHeader !== 'Bearer mock-token-1') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { status } = req.body;
     try {
         await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, req.params.id]);
@@ -154,5 +170,4 @@ app.put('/api/admin/bookings/:id/status', async (req, res) => {
         res.status(500).json({ error: 'Update failed' });
     }
 });
-
 app.listen(PORT, () => console.log(`🚀 Server live at http://localhost:${PORT}`));
