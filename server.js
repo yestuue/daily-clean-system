@@ -13,11 +13,13 @@ app.use(express.static(path.join(__dirname)));
 
 // Supabase Connection Configuration
 // Replace the string below with your actual connection string if not using a .env file
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:[YOUR-PASSWORD]@db.jeoqnvwwthxtonfapgej.supabase.co:5432/postgres';
+// 1. Use the Session Pooler URL from Supabase to avoid IPv6 issues
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:Ekfaads123@aws-0-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require';
 
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: { rejectUnauthorized: false } // Required for Supabase & Render
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10000, // Wait 10s for Lagos network stability
 });
 
 // Initialize Tables for PostgreSQL
