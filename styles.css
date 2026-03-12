@@ -162,6 +162,22 @@ h1, h2, h3, h4 {
     transform: translateX(0);
 }
 
+/* CRITICAL: Hero content must always be visible regardless of JS */
+.hero .reveal,
+.hero .fade-up,
+.hero-text-wrapper {
+    opacity: 1 !important;
+    transform: none !important;
+}
+.hero-title,
+.hero-subtitle,
+.trust-badge,
+.address-pill,
+.hero-buttons {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 /* Splash Screen */
 .splash-screen {
     position: fixed;

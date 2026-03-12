@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Elements
     const loginScreen = document.getElementById('login-screen');
     const dashboardApp = document.getElementById('dashboard-app');
     const loginForm = document.getElementById('login-form');
@@ -10,15 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const views = document.querySelectorAll('.view');
     const refreshBtn = document.getElementById('refresh-bookings');
 
-    // State
-    let token = localStorage.getItem('dc_admin_token') || null;
+    // ✅ FIX: Use sessionStorage and always prefix with "Bearer "
+    let token = sessionStorage.getItem('dc_admin_token') || null;
+
+    // Helper: always returns correct auth header
+    function authHeader() {
+        return { 'Authorization': `Bearer ${token}` };
+    }
 
     // Check Auth on Load
     if (token) {
         showDashboard();
     }
 
-    // Login Handle
+    // Login Handler
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const user = document.getElementById('username').value;
@@ -27,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
         btn.disabled = true;
+        errorMsg.textContent = '';
 
         try {
             const res = await fetch('/api/admin/login', {
@@ -38,22 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 token = data.token;
-                localStorage.setItem('dc_admin_token', token);
+                // ✅ FIX: Save to sessionStorage (not localStorage)
+                sessionStorage.setItem('dc_admin_token', token);
                 showDashboard();
             } else {
                 errorMsg.textContent = data.error || 'Invalid credentials';
             }
         } catch (err) {
-            errorMsg.textContent = 'Server connection error';
+            errorMsg.textContent = 'Server connection error. Try again.';
         } finally {
             btn.innerHTML = 'Login to Dashboard';
             btn.disabled = false;
         }
     });
 
-    // Logout Handle
+    // Logout Handler
     logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('dc_admin_token');
+        sessionStorage.removeItem('dc_admin_token');
         token = null;
         dashboardApp.classList.add('hidden');
         loginScreen.classList.remove('hidden');
@@ -74,17 +80,20 @@ document.addEventListener('DOMContentLoaded', () => {
             views.forEach(v => v.classList.remove('active'));
             document.getElementById(`view-${targetView}`).classList.add('active');
 
-            // Page Title
-            document.getElementById('page-title').textContent = targetView.charAt(0).toUpperCase() + targetView.slice(1) + ' ' + (targetView === 'dashboard' ? 'Overview' : 'Management');
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                bookings: 'Order Management',
+                customers: 'Loyalty Members'
+            };
+            document.getElementById('page-title').textContent = titles[targetView] || targetView;
 
-            // Refresh data based on view
             if (targetView === 'dashboard') fetchDashboardData();
             if (targetView === 'bookings') fetchAllBookings();
             if (targetView === 'customers') fetchLoyaltyMembers();
         });
     });
 
-    refreshBtn.addEventListener('click', fetchAllBookings);
+    if (refreshBtn) refreshBtn.addEventListener('click', fetchAllBookings);
 
     function showDashboard() {
         loginScreen.classList.add('hidden');
@@ -92,84 +101,113 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchDashboardData();
     }
 
-    // Data Fetching: Dashboard Stats & Recent
+    // ✅ FIX: All fetches now use authHeader() which adds "Bearer " prefix
     async function fetchDashboardData() {
         try {
             const res = await fetch('/api/admin/dashboard', {
-                headers: { 'Authorization': token }
+                headers: authHeader()
             });
-            if (res.status === 401) return logoutBtn.click();
+
+            // ✅ FIX: If 401, clear token and show login (don't auto-click logout)
+            if (res.status === 401) {
+                sessionStorage.removeItem('dc_admin_token');
+                token = null;
+                dashboardApp.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                errorMsg.textContent = 'Session expired. Please login again.';
+                return;
+            }
+
             const data = await res.json();
-            
             document.getElementById('stat-total-bookings').textContent = data.totalBookings || '0';
             document.getElementById('stat-pending').textContent = data.pendingBookings || '0';
             document.getElementById('stat-loyalty').textContent = data.totalLoyalty || '0';
 
-            const bRes = await fetch('/api/admin/bookings', { headers: { 'Authorization': token }});
+            // Load recent bookings for dashboard view
+            const bRes = await fetch('/api/admin/bookings', { headers: authHeader() });
             const bookings = await bRes.json();
             
             const tbody = document.getElementById('recent-bookings-list');
             tbody.innerHTML = '';
             
+            if (!bookings.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No bookings yet. Share your site!</td></tr>';
+                return;
+            }
+
             bookings.slice(0, 5).forEach(b => {
+                const statusClass = `status-${b.status.toLowerCase()}`;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>#${b.id.toString().padStart(4, '0')}</td>
+                    <td class="id-tag">#${b.id.toString().padStart(4, '0')}</td>
                     <td><b>${b.full_name}</b></td>
-                    <td>${b.services.substring(0, 20)}...</td>
-                    <td>${new Date(b.created_at).toLocaleDateString()}</td>
-                    <td><span class="badge ${b.status.toLowerCase()}">${b.status}</span></td>
+                    <td>${(b.services || '').substring(0, 30)}${b.services && b.services.length > 30 ? '...' : ''}</td>
+                    <td>${new Date(b.created_at).toLocaleDateString('en-NG')}</td>
+                    <td><span class="status-pill ${statusClass}">${b.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
+
         } catch (err) {
-            console.error('Error fetching dashboard data:', err);
+            console.error('Dashboard fetch error:', err);
         }
     }
 
-    // Data Fetching: All Bookings
     async function fetchAllBookings() {
         const btn = document.getElementById('refresh-bookings');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
         
         try {
             const res = await fetch('/api/admin/bookings', {
-                headers: { 'Authorization': token }
+                headers: authHeader()
             });
-            if (res.status === 401) return logoutBtn.click();
+
+            if (res.status === 401) {
+                sessionStorage.removeItem('dc_admin_token');
+                token = null;
+                dashboardApp.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                return;
+            }
+
             const bookings = await res.json();
-            
             const tbody = document.getElementById('all-bookings-list');
             tbody.innerHTML = '';
             
+            if (!bookings.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No bookings yet.</td></tr>';
+                return;
+            }
+
             bookings.forEach(b => {
                 const tr = document.createElement('tr');
+                const phoneClean = (b.phone || '').replace(/[^0-9]/g, '').slice(-10);
                 tr.innerHTML = `
                     <td>
-                        <b>#${b.id.toString().padStart(4, '0')}</b><br>
-                        <small style="color:#888">${new Date(b.created_at).toLocaleString()}</small>
+                        <div class="id-tag">#${b.id.toString().padStart(4, '0')}</div>
+                        <div class="time-tag">${new Date(b.created_at).toLocaleString('en-NG')}</div>
                     </td>
                     <td>
                         <b>${b.full_name}</b><br>
-                        <a href="https://wa.me/234${b.phone.replace(/[^0-9]/g, '').slice(-10)}" target="_blank" class="wa-link">
+                        <a href="https://wa.me/234${phoneClean}" target="_blank" style="color:#25d366; font-size:0.85rem;">
                            <i class="fa-brands fa-whatsapp"></i> ${b.phone}
                         </a>
                     </td>
                     <td>
-                        <div style="margin-bottom:5px;"><b>${b.services}</b></div>
-                        <span class="badge-date">${b.pickup_date} | ${b.time_slot}</span>
+                        <div style="font-weight:600; margin-bottom:4px;">${b.services || '-'}</div>
+                        <small style="color:#888;">${b.pickup_date || ''} | ${b.time_slot || ''}</small>
                     </td>
                     <td>
-                        <div class="addr-text">${b.address}</div>
-                        <small class="note-text">Notes: ${b.notes || 'None'}</small>
+                        <div>${b.address || '-'}</div>
+                        <small style="color:#888;">Notes: ${b.notes || 'None'}</small>
                     </td>
                     <td>
                         <select class="status-select" data-id="${b.id}" data-name="${b.full_name}" data-phone="${b.phone}">
-                            <option value="Pending" ${b.status==='Pending'?'selected':''}>Pending</option>
-                            <option value="Processing" ${b.status==='Processing'?'selected':''}>Processing</option>
-                            <option value="Ready" ${b.status==='Ready'?'selected':''}>Ready</option>
-                            <option value="Delivered" ${b.status==='Delivered'?'selected':''}>Delivered</option>
-                            <option value="Cancelled" ${b.status==='Cancelled'?'selected':''}>Cancelled</option>
+                            <option value="Pending"    ${b.status==='Pending'    ?'selected':''}>⏳ Pending</option>
+                            <option value="Processing" ${b.status==='Processing' ?'selected':''}>🔄 Processing</option>
+                            <option value="Ready"      ${b.status==='Ready'      ?'selected':''}>✅ Ready</option>
+                            <option value="Delivered"  ${b.status==='Delivered'  ?'selected':''}>🚀 Delivered</option>
+                            <option value="Cancelled"  ${b.status==='Cancelled'  ?'selected':''}>❌ Cancelled</option>
                         </select>
                     </td>
                 `;
@@ -179,24 +217,28 @@ document.addEventListener('DOMContentLoaded', () => {
             attachStatusListeners();
 
         } catch (err) {
-            console.error(err);
+            console.error('Bookings fetch error:', err);
         } finally {
-            btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh List';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh List';
         }
     }
 
     async function fetchLoyaltyMembers() {
         const tbody = document.getElementById('loyalty-list');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
         try {
-            // Reusing dashboard data for member count/list if endpoint exists
-            const res = await fetch('/api/admin/bookings', { headers: { 'Authorization': token }}); // Fallback check
-            const members = await res.json(); // You can create a specific /api/admin/loyalty endpoint in server.js
+            const res = await fetch('/api/admin/dashboard', { headers: authHeader() });
+            const data = await res.json();
+            const count = parseInt(data.totalLoyalty) || 0;
             
-            tbody.innerHTML = members.length > 0 
-                ? '<tr><td colspan="4" class="text-center">Connected to Loyalty Database. Active Members: ' + members.length + '</td></tr>'
-                : '<tr><td colspan="4" class="text-center">No members found yet.</td></tr>';
+            tbody.innerHTML = count > 0
+                ? `<tr><td colspan="4" class="text-center" style="padding:30px;">
+                    <div style="font-size:2rem;margin-bottom:10px;">🎉</div>
+                    <strong>${count} loyalty member${count > 1 ? 's' : ''}</strong> signed up via your landing page.
+                   </td></tr>`
+                : '<tr><td colspan="4" class="text-center">No members yet. Share your site to get signups!</td></tr>';
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-error">Sync Error.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading members.</td></tr>';
         }
     }
 
@@ -206,29 +248,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = e.target.getAttribute('data-id');
                 const name = e.target.getAttribute('data-name');
                 const phone = e.target.getAttribute('data-phone');
-                const newStatus = e.target.value;
-                
-                e.target.parentElement.classList.add('updating');
+                const newStatus = e.target.value.replace(/[^a-zA-Z]/g, ''); // strip emoji
                 
                 try {
-                    const sRes = await fetch(`/api/admin/bookings/${id}/status`, {
+                    const res = await fetch(`/api/admin/bookings/${id}/status`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                        headers: { 
+                            'Content-Type': 'application/json', 
+                            ...authHeader()
+                        },
                         body: JSON.stringify({ status: newStatus })
                     });
 
-                    if (sRes.ok) {
-                        // Optional: Ask to notify customer via WhatsApp
-                        if (confirm(`Status updated to ${newStatus}. Send WhatsApp update to ${name}?`)) {
-                            const msg = encodeURIComponent(`Hi ${name}, your Daily Clean order #${id.toString().padStart(4, '0')} is now ${newStatus.toUpperCase()}. Thank you!`);
-                            window.open(`https://wa.me/234${phone.replace(/[^0-9]/g, '').slice(-10)}?text=${msg}`, '_blank');
+                    if (res.ok) {
+                        if (confirm(`✅ Status updated to "${newStatus}".\n\nSend WhatsApp notification to ${name}?`)) {
+                            const msg = encodeURIComponent(`Hi ${name}! 👋\n\nYour Daily Clean order #${id.toString().padStart(4,'0')} status is now: *${newStatus.toUpperCase()}*\n\nThank you for choosing Daily Clean! 🧺✨`);
+                            const phoneClean = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+                            window.open(`https://wa.me/234${phoneClean}?text=${msg}`, '_blank');
                         }
+                    } else {
+                        alert('Update failed. Please try again.');
+                        fetchAllBookings();
                     }
                 } catch(err) {
-                    alert('Update failed. Check server connection.');
+                    alert('Connection error. Check your internet.');
                     fetchAllBookings();
-                } finally {
-                    e.target.parentElement.classList.remove('updating');
                 }
             });
         });
