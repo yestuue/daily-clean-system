@@ -7,62 +7,39 @@
     <meta name="description" content="Daily Clean offers professional laundry, dry cleaning, wash & fold, and free pickup & delivery in Surulere, Lagos. Book online or WhatsApp us today. No 33 Ayodele Street, Ikate Surulere.">
     
     <meta property="og:title" content="Daily Clean Lagos | Professional Laundry Service">
-    <meta property="og:description" content="Professional laundry, dry cleaning & delivery in Surulere. Focus on clean and fresh.">
+    <meta property="og:description" content="Professional laundry, dry cleaning & delivery in Surulere. Clean and Fresh.">
     <meta property="og:image" content="logo.png">
-    <meta property="og:url" content="https://dailyclean.com.ng">
+    <meta property="og:url" content="https://daily-clean-system.onrender.com">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="styles.css">
-<style>
-    @media (max-width: 768px) {
-    /* 1. Fix the Title */
-    .hero-title { font-size: 2.2rem !important; line-height: 1.2; }
-
-    /* 2. Force Cards to wrap (Newbie friendly grid fix) */
-    .services-grid, .service-checkbox-grid { 
-        grid-template-columns: 1fr !important; 
-    }
-
-    /* 3. Fix the Booking Container Padding */
-    .booking-container {
-        padding: 20px 15px !important;
-        margin: 10px auto !important;
-        width: 95% !important;
-    }
-
-    /* 4. Fix Button Widths */
-    .btn, .hero-buttons {
-        width: 100% !important;
-        flex-direction: column;
-    }
-}
-    </style>
 </head>
 <body>
 
+    <!-- Splash Screen -->
     <div id="splash-screen" class="splash-screen">
         <img src="logo.png" alt="Daily Clean Logo" class="splash-logo">
         <div class="water-ripple"></div>
     </div>
 
+    <!-- Promo Banner -->
     <div id="promo-banner" class="promo-banner hidden">
         <span>⚡ Book before 12pm today for same-day pickup! Offer ends soon.</span>
         <button class="close-banner" aria-label="Close Promo"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <div class="scroll-progress"></div>
+    <!-- Scroll Progress -->
+    <div class="scroll-progress" id="scroll-progress"></div>
 
+    <!-- Navbar -->
     <header class="navbar" id="navbar">
         <div class="nav-container">
             <a href="#" class="logo-link">
                 <img src="logo.png" alt="Daily Clean Logo" class="nav-logo">
             </a>
-            
             <nav class="nav-links">
                 <a href="#hero">Home</a>
                 <a href="#services">Services</a>
@@ -71,10 +48,10 @@
                 <a href="#testimonials">Testimonials</a>
                 <a href="#faq">FAQ</a>
             </nav>
-
             <div class="nav-actions">
                 <div id="status-badge" class="status-badge">
-                    <span class="status-dot"></span> <span class="status-text">Checking...</span>
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking...</span>
                 </div>
                 <a href="#booking" class="btn btn-gold btn-book-now">Book Now</a>
                 <button class="hamburger" aria-label="Toggle Menu">
@@ -84,6 +61,7 @@
         </div>
     </header>
 
+    <!-- Mobile Drawer -->
     <div class="mobile-drawer" id="mobile-drawer">
         <button class="close-drawer" aria-label="Close Drawer"><i class="fa-solid fa-xmark"></i></button>
         <nav class="mobile-nav">
@@ -97,10 +75,13 @@
         </nav>
     </div>
 
+    <!-- ✅ HERO — NO reveal/fade-up classes so text is ALWAYS visible -->
     <section id="hero" class="hero">
         <div class="hero-content">
-            <div class="hero-text-wrapper reveal fade-up">
-                <span class="trust-badge"><i class="fa-solid fa-star"></i> Trusted by 2,000+ Lagos Families</span>
+            <div class="hero-text-wrapper">
+                <span class="trust-badge">
+                    <i class="fa-solid fa-star"></i> Trusted by 2,000+ Lagos Families
+                </span>
                 <h1 class="hero-title">Lagos' Freshest<br>Laundry Experience</h1>
                 <p class="hero-subtitle">Professional Wash, Dry Clean & Delivery — Right to Your Door in Surulere & Beyond</p>
                 <div class="address-pill">
@@ -120,6 +101,7 @@
         <a href="#services" class="scroll-arrow"><i class="fa-solid fa-chevron-down"></i></a>
     </section>
 
+    <!-- Ticker -->
     <div class="ticker-wrap">
         <div class="ticker">
             <div class="ticker-item">✦ FREE PICKUP & DELIVERY ✦ SAME-DAY SERVICE AVAILABLE ✦ WASH & FOLD ✦ DRY CLEANING ✦ IRONING & PRESSING ✦ DUVET & BEDDING ✦ SHOE CLEANING ✦ CORPORATE BULK ORDERS ✦ EXPRESS 3-HOUR TURNAROUND ✦ TRUSTED IN SURULERE SINCE DAY ONE ✦</div>
@@ -127,6 +109,7 @@
         </div>
     </div>
 
+    <!-- Services -->
     <section id="services" class="services section-padding">
         <div class="container">
             <div class="section-header reveal fade-up">
@@ -194,6 +177,7 @@
         </div>
     </section>
 
+    <!-- How It Works -->
     <section id="how" class="how-it-works bg-sky section-padding">
         <div class="container">
             <div class="section-header reveal fade-up">
@@ -233,13 +217,13 @@
         </div>
     </section>
 
+    <!-- Booking Form -->
     <section id="booking" class="booking section-padding">
-        <div class="container reveal fade-up">
-            <div class="section-header">
+        <div class="container">
+            <div class="section-header reveal fade-up">
                 <h2>Book Your Pickup</h2>
                 <p>Simply select your services and let us do the rest.</p>
             </div>
-            
             <div class="booking-container">
                 <div class="booking-progress">
                     <div class="progress-step active" data-step="1">1. Services</div>
@@ -247,7 +231,6 @@
                     <div class="progress-step" data-step="3">3. Details</div>
                     <div class="progress-step" data-step="4">4. Confirm</div>
                 </div>
-                
                 <form id="booking-form" class="booking-form">
                     <div class="form-step active" id="step-1">
                         <h3>Select Services</h3>
@@ -382,12 +365,13 @@
         </div>
     </section>
 
+    <!-- Pricing -->
     <section id="pricing" class="pricing bg-sky section-padding">
         <div class="container">
             <div class="section-header reveal fade-up">
                 <h2>Simple, Honest Pricing</h2>
                 <div class="pricing-toggle">
-                    <span class="active" id="payg-toggle">Pay As You Go</span>
+                    <span id="payg-toggle">Pay As You Go</span>
                     <label class="switch">
                         <input type="checkbox" id="pricing-switch">
                         <span class="slider round"></span>
@@ -395,7 +379,6 @@
                     <span id="sub-toggle">Subscribe & Save 20%</span>
                 </div>
             </div>
-            
             <div class="pricing-cards reveal fade-up">
                 <div class="price-card basic-card">
                     <div class="card-badge basic-badge">Basic</div>
@@ -436,6 +419,7 @@
         </div>
     </section>
 
+    <!-- Live Stats -->
     <section class="live-stats">
         <div class="container stats-grid reveal fade-up">
             <div class="stat-item">
@@ -461,59 +445,214 @@
         </div>
     </section>
 
+    <!-- Testimonials -->
     <section id="testimonials" class="testimonials section-padding">
         <div class="container">
             <div class="section-header reveal fade-up">
                 <h2>What Lagos Is Saying</h2>
             </div>
-            <div class="carousel-container reveal fade-up">
+            <div class="carousel-container">
                 <div class="carousel-track" id="testimonial-track">
                     <div class="test-card">
                         <div class="stars">★★★★★</div>
-                        <p class="review-text">"Daily Clean saved my life! Brand new results."</p>
+                        <p class="review-text">"Daily Clean saved my life! My husband's agbada came back looking brand new. Fast, reliable, and they even called to confirm delivery. 10/10!"</p>
                         <h4 class="reviewer-name">— Adaeze O., Yaba</h4>
+                    </div>
+                    <div class="test-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"I use their weekly plan and I've never thought about laundry again. Best decision I made this year."</p>
+                        <h4 class="reviewer-name">— Chukwuemeka B., Surulere</h4>
+                    </div>
+                    <div class="test-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"The dry cleaning is exceptional. My office suits always come back perfectly pressed. I've referred all my colleagues."</p>
+                        <h4 class="reviewer-name">— Funmi A., Ikeja</h4>
+                    </div>
+                    <div class="test-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"They picked up my duvet, cleaned it same day and delivered before dinner. No stress at all. Daily Clean is the real deal."</p>
+                        <h4 class="reviewer-name">— Biodun K., Aguda</h4>
+                    </div>
+                    <div class="test-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"Their express service is genuinely express! Dropped off at 9am, had my clothes back by 12:30pm. Sharp sharp!"</p>
+                        <h4 class="reviewer-name">— Tunde M., Surulere</h4>
+                    </div>
+                    <div class="test-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"I was skeptical at first but now I can't imagine life without them. My kids' school uniforms are always immaculate."</p>
+                        <h4 class="reviewer-name">— Mrs. Okafor, Orile</h4>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Loyalty -->
+    <section id="loyalty" class="loyalty section-padding">
+        <div class="container">
+            <div class="section-header">
+                <h2>Wash More, Pay Less 🎉</h2>
+                <p>Every 10 washes = 1 FREE wash. Plus refer a friend and BOTH get 20% off!</p>
+            </div>
+            <div class="punch-card">
+                <div class="stamp filled">✓</div>
+                <div class="stamp filled">✓</div>
+                <div class="stamp filled">✓</div>
+                <div class="stamp">4</div>
+                <div class="stamp">5</div>
+                <div class="stamp">6</div>
+                <div class="stamp">7</div>
+                <div class="stamp">8</div>
+                <div class="stamp">9</div>
+                <div class="stamp free">FREE</div>
+            </div>
+            <div class="loyalty-form-wrapper">
+                <h3>Join the loyalty program — be first to get exclusive deals:</h3>
+                <div class="loyalty-form">
+                    <input type="email" id="loyalty-email" placeholder="Enter your email address">
+                    <button class="btn" id="loyalty-submit">Join Now 🎊</button>
+                </div>
+                <p id="loyalty-msg" style="color:#fff; margin-top:10px;"></p>
+                <p class="referral-text">🤝 Refer a friend → both of you get <strong>20% off</strong> your next order!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Find Us -->
+    <section id="contact" class="find-us section-padding">
+        <div class="container">
+            <div class="section-header reveal fade-up">
+                <h2>Find Us in Surulere</h2>
+            </div>
+            <div class="find-grid">
+                <div class="info-card">
+                    <div class="info-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>No 33 Ayodele Street, Ikate Surulere, Lagos, Nigeria</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <div>
+                            <h4>Phone / WhatsApp</h4>
+                            <p>07084588119</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <div>
+                            <h4>Opening Hours</h4>
+                            <p>Mon–Sat: 7:00am – 8:00pm<br>Sunday: 9:00am – 5:00pm</p>
+                        </div>
+                    </div>
+                    <a href="https://maps.google.com/?q=No+33+Ayodele+Street+Ikate+Surulere+Lagos" target="_blank" class="btn btn-outline">
+                        <i class="fa-solid fa-map-location-dot"></i> Get Directions
+                    </a>
+                </div>
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.7!2d3.3617!3d6.4969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMjknNDguOCJOIDPCsDAyJzcyLjEiRQ!5e0!3m2!1sen!2sng!4v1234567890"
+                        allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq section-padding bg-sky">
+        <div class="container">
+            <div class="section-header reveal fade-up">
+                <h2>Got Questions? We've Got Answers</h2>
+            </div>
+            <div class="accordion">
+                <div class="accordion-item">
+                    <button class="accordion-header">Do you offer free pickup and delivery? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Yes! We offer free pickup and delivery within Surulere and nearby areas. For farther locations, a small delivery fee may apply.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">How long does laundry take? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Standard service takes 24–48 hours. Our Express 3-Hour service is available for same-day needs when booked before 10am.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">Do you clean suits, lace, and delicate fabrics? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Absolutely! We specialize in dry cleaning for suits, agbada, lace, ankara, and all delicate fabrics with professional care.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">What areas in Lagos do you cover? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>We primarily serve Surulere, Yaba, Aguda, Orile, Iponri, and surrounding areas. Contact us to confirm your location.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">Can I get same-day or express service? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Yes! Book before 10am for our Express 3-Hour service. A 50% surcharge applies for express orders.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">What payment methods do you accept? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>We accept bank transfers, cash on delivery, and mobile payments. Payment details will be shared when your order is confirmed.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">Do you offer bulk or corporate laundry services? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Yes! We handle office uniforms, hotel linen, restaurant napkins, and large bulk orders. Contact us for a custom quote.</p></div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-header">How does the subscription plan work? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="accordion-content"><p>Subscribe monthly and we schedule automatic weekly pickups. You save up to 20% compared to pay-per-wash pricing. Cancel anytime.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col brand-col">
                     <img src="logo.png" alt="Daily Clean Logo" class="footer-logo">
-                    <p>Clean and Fresh — Lagos' Trusted Experts.</p>
+                    <p>Clean and Fresh — Lagos' Trusted Laundry Experts.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="#hero">Home</a></li>
                         <li><a href="#services">Services</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
                         <li><a href="#booking">Book Now</a></li>
+                        <li><a href="#faq">FAQ</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h4>Contact</h4>
                     <ul>
-                        <li><i class="fa-solid fa-location-dot"></i> No 33 Ayodele Street, Surulere</li>
+                        <li><i class="fa-solid fa-location-dot"></i> No 33 Ayodele Street, Ikate Surulere, Lagos</li>
                         <li><i class="fa-solid fa-phone"></i> 07084588119</li>
+                        <li><i class="fa-brands fa-whatsapp"></i> <a href="https://wa.me/2347084588119">Chat on WhatsApp</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h4>Follow Us</h4>
                     <div class="social-links">
-                        <a href="https://wa.me/2347084588119"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="https://wa.me/2347084588119" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
+            <div class="footer-divider"></div>
             <div class="footer-bottom">
-                <p>© 2026 Daily Clean. Surulere, Lagos.</p>
+                <p>© 2026 Daily Clean. No 33 Ayodele Street, Ikate Surulere, Lagos. All Rights Reserved.</p>
+                <p class="credit">Made with 💙 in Surulere, Lagos</p>
             </div>
         </div>
     </footer>
 
-    <a href="https://wa.me/2347084588119" class="whatsapp-float" target="_blank">
+    <!-- Floating WhatsApp -->
+    <a href="https://wa.me/2347084588119?text=Hi%20Daily%20Clean!%20I%27d%20like%20to%20book%20a%20laundry%20pickup." class="whatsapp-float" target="_blank">
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring-2"></div>
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
