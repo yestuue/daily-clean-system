@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 2000);
 
-    // Initialize logic
     initTimeLogic();
     initScrollLogic();
     initMobileNav();
@@ -21,71 +20,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 2. Time & Store Status Logic
 function initTimeLogic() {
-    // 1. Get current Lagos time for the promo banner
     const watNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Africa/Lagos"}));
     const day = watNow.getDay();
     const hour = watNow.getHours();
 
-    // 2. Force the Status Badge to always be Green/Open
     const badge = document.getElementById('status-badge');
     if (badge) {
         const textSpan = badge.querySelector('.status-text');
         badge.classList.add('open');
         badge.classList.remove('closed');
-        if (textSpan) {
-            textSpan.textContent = 'Available to Book';
-        }
+        if (textSpan) textSpan.textContent = 'Available to Book';
     }
 
-    // 3. Update Promo Banner (Only shows Mon-Sat, before 12pm)
     const banner = document.getElementById('promo-banner');
     if (banner && day >= 1 && day <= 6 && hour < 12) {
         banner.classList.remove('hidden');
     }
 
-    // 4. Handle Closing the Banner
     const closeBtn = document.querySelector('.close-banner');
     if (closeBtn && banner) {
-        closeBtn.addEventListener('click', () => {
-            banner.classList.add('hidden');
-        });
-    }
-    if (randomOrders) {
-        // random number between 30 and 120
-        randomOrders.textContent = Math.floor(Math.random() * (120 - 30 + 1)) + 30;
+        closeBtn.addEventListener('click', () => banner.classList.add('hidden'));
     }
 }
 
-// 3. Scroll Logic (Navbar, Progress, Reveal)
+// 3. Scroll Logic
 function initScrollLogic() {
     const navbar = document.getElementById('navbar');
     const scrollProgress = document.querySelector('.scroll-progress');
-    
+
     window.addEventListener('scroll', () => {
-        // Navbar styling
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
 
-        // Scroll progress
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const scrolled = (winScroll / height) * 100;
-        if(scrollProgress) scrollProgress.style.width = scrolled + '%';
+        if (scrollProgress) scrollProgress.style.width = scrolled + '%';
     });
 
-    // Intersection Observer for Reveal Animations
+    // ✅ FIX: Observer now adds 'visible' class (matches CSS)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('active');
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // stop watching once visible
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
 
-    document.querySelectorAll('.reveal').forEach(el => {
+    // ✅ FIX: Observe all reveal/slide-right elements
+    document.querySelectorAll('.reveal, .slide-right').forEach(el => {
         observer.observe(el);
     });
 }
@@ -100,8 +87,8 @@ function initMobileNav() {
     const openMenu = () => drawer.classList.add('open');
     const closeMenu = () => drawer.classList.remove('open');
 
-    if(hamburger) hamburger.addEventListener('click', openMenu);
-    if(closeDrawer) closeDrawer.addEventListener('click', closeMenu);
+    if (hamburger) hamburger.addEventListener('click', openMenu);
+    if (closeDrawer) closeDrawer.addEventListener('click', closeMenu);
     links.forEach(link => link.addEventListener('click', closeMenu));
 }
 
@@ -113,16 +100,16 @@ function initCounters() {
     const animateCounters = () => {
         counters.forEach(counter => {
             const target = +counter.getAttribute('data-target');
-            const duration = 2000; // ms
+            const duration = 2000;
             const suffix = counter.getAttribute('data-suffix') || '';
             const isDecimal = counter.getAttribute('data-decimals');
-            const stepTime = Math.abs(Math.floor(duration / (isDecimal ? target*10 : target)));
-            
+            const stepTime = Math.abs(Math.floor(duration / (isDecimal ? target * 10 : target)));
+
             let current = 0;
             const timer = setInterval(() => {
-                if(isDecimal) {
+                if (isDecimal) {
                     current += 0.1;
-                    if(current >= target) {
+                    if (current >= target) {
                         counter.innerText = target.toFixed(1) + suffix;
                         clearInterval(timer);
                     } else {
@@ -130,7 +117,7 @@ function initCounters() {
                     }
                 } else {
                     current += Math.ceil(target / 100);
-                    if(current >= target) {
+                    if (current >= target) {
                         counter.innerText = target.toLocaleString() + suffix;
                         clearInterval(timer);
                     } else {
@@ -142,27 +129,26 @@ function initCounters() {
     };
 
     const observer = new IntersectionObserver((entries) => {
-        if(entries[0].isIntersecting && !hasAnimated) {
+        if (entries[0].isIntersecting && !hasAnimated) {
             hasAnimated = true;
             animateCounters();
         }
     });
-    
+
     const statsSection = document.querySelector('.live-stats');
-    if(statsSection) observer.observe(statsSection);
+    if (statsSection) observer.observe(statsSection);
 }
 
-// 6. Booking Form Multi-step Logic
+// 6. Booking Form Multi-step
 function initBookingForm() {
     let currentStep = 1;
     const steps = document.querySelectorAll('.form-step');
     const progressSteps = document.querySelectorAll('.progress-step');
     const nextBtns = document.querySelectorAll('.btn-next');
     const prevBtns = document.querySelectorAll('.btn-prev');
-    
-    // Set min date to today
+
     const dateInput = document.getElementById('pickup-date');
-    if(dateInput) {
+    if (dateInput) {
         const today = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', today);
     }
@@ -170,16 +156,15 @@ function initBookingForm() {
     const updateUI = () => {
         steps.forEach(step => step.classList.remove('active'));
         document.getElementById(`step-${currentStep}`).classList.add('active');
-        
+
         progressSteps.forEach((progress, idx) => {
-            if(idx < currentStep) {
+            if (idx < currentStep) {
                 progress.classList.add('active');
             } else {
                 progress.classList.remove('active');
             }
         });
 
-        // Update Summary if going to Step 4
         if (currentStep === 4) {
             const selectedServices = Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value);
             const date = document.getElementById('pickup-date').value || 'Not set';
@@ -200,76 +185,49 @@ function initBookingForm() {
     const validateStep = (stepNum) => {
         if (stepNum === 1) {
             const checked = document.querySelectorAll('input[name="service"]:checked');
-            if(checked.length === 0) {
-                alert('Please select at least one service.');
-                return false;
-            }
+            if (checked.length === 0) { alert('Please select at least one service.'); return false; }
         }
         if (stepNum === 2) {
             const dateStr = document.getElementById('pickup-date').value;
-            if(!dateStr) {
-                alert('Please select a date.');
-                return false;
-            }
+            if (!dateStr) { alert('Please select a date.'); return false; }
         }
         if (stepNum === 3) {
             const name = document.getElementById('fullName').value;
             const phone = document.getElementById('whatsappNo').value;
             const isDelivery = document.querySelector('input[name="delivery"]:checked').value === "Pickup & Delivery";
             const address = document.getElementById('address').value;
-            
-            if(!name || !phone) {
-                alert('Please fill in your Name and WhatsApp Number.');
-                return false;
-            }
-            if(isDelivery && !address) {
-                alert('Please provide a delivery address.');
-                return false;
-            }
+            if (!name || !phone) { alert('Please fill in your Name and WhatsApp Number.'); return false; }
+            if (isDelivery && !address) { alert('Please provide a delivery address.'); return false; }
         }
         return true;
     };
 
     nextBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            if(validateStep(currentStep)) {
-                currentStep++;
-                updateUI();
-            }
+            if (validateStep(currentStep)) { currentStep++; updateUI(); }
         });
     });
 
     prevBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            if(currentStep > 1) {
-                currentStep--;
-                updateUI();
-            }
+            if (currentStep > 1) { currentStep--; updateUI(); }
         });
     });
 
-    // Toggle Address field requirement based on delivery choice
     const deliveryRadios = document.querySelectorAll('input[name="delivery"]');
     const addressGroup = document.getElementById('address-group');
     deliveryRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
-            if(e.target.value === 'Drop Off Myself') {
-                addressGroup.style.display = 'none';
-            } else {
-                addressGroup.style.display = 'block';
-            }
+            if (addressGroup) addressGroup.style.display = e.target.value === 'Drop Off Myself' ? 'none' : 'block';
         });
     });
-
-    // Final Submission Logic
-    const whatsappBtn = document.getElementById('submit-whatsapp');
-    const emailBtn = document.getElementById('submit-email');
 
     const generateMessageBody = () => {
         const selectedServices = Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value).join(', ');
         const date = document.getElementById('pickup-date').value;
         const timeSlot = document.querySelector('input[name="timeSlot"]:checked').value;
         const name = document.getElementById('fullName').value;
+        const phone = document.getElementById('whatsappNo').value;
         const address = document.getElementById('address').value;
         const notes = document.getElementById('notes').value;
 
@@ -277,89 +235,61 @@ function initBookingForm() {
 *Services:* ${selectedServices}
 *Date:* ${date} | *Time:* ${timeSlot}
 *Name:* ${name}
+*Phone:* ${phone}
 *Address:* ${address}
-*Notes:* ${notes}`;
+*Notes:* ${notes || 'None'}`;
     };
 
-    if(whatsappBtn) {
+    const submitBooking = async (callback) => {
+        const payload = {
+            services: Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value).join(', '),
+            date: document.getElementById('pickup-date').value,
+            timeSlot: document.querySelector('input[name="timeSlot"]:checked').value,
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('whatsappNo').value,
+            address: document.getElementById('address').value,
+            notes: document.getElementById('notes').value
+        };
+
+        try {
+            await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {
+            console.error('Backend save failed, continuing anyway');
+        }
+
+        fireConfetti();
+        setTimeout(() => { callback(); resetForm(); }, 800);
+    };
+
+    const whatsappBtn = document.getElementById('submit-whatsapp');
+    if (whatsappBtn) {
         whatsappBtn.addEventListener('click', async () => {
-            const oldText = whatsappBtn.innerHTML;
             whatsappBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
             whatsappBtn.disabled = true;
-
-            // 1. Submit to Database API
-            const payload = {
-                services: Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value).join(', '),
-                date: document.getElementById('pickup-date').value,
-                timeSlot: document.querySelector('input[name="timeSlot"]:checked').value,
-                fullName: document.getElementById('fullName').value,
-                phone: document.getElementById('whatsappNo').value,
-                address: document.getElementById('address').value,
-                notes: document.getElementById('notes').value
-            };
-
-            try {
-                await fetch('/api/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch(e) {
-                console.error('Backend save failed, redirecting anyway');
-            }
-
-            // 2. Redirect to WhatsApp
-            const msg = encodeURIComponent(generateMessageBody());
-            fireConfetti();
-            
-            whatsappBtn.innerHTML = oldText;
-            whatsappBtn.disabled = false;
-
-            setTimeout(() => {
+            await submitBooking(() => {
+                const msg = encodeURIComponent(generateMessageBody());
                 window.open(`https://wa.me/2347084588119?text=${msg}`, '_blank');
-                resetForm();
-            }, 800);
+            });
+            whatsappBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> WhatsApp';
+            whatsappBtn.disabled = false;
         });
     }
 
-    if(emailBtn) {
+    const emailBtn = document.getElementById('submit-email');
+    if (emailBtn) {
         emailBtn.addEventListener('click', async () => {
-             const oldText = emailBtn.innerHTML;
             emailBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
             emailBtn.disabled = true;
-
-            // 1. Submit to Database API
-            const payload = {
-                services: Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value).join(', '),
-                date: document.getElementById('pickup-date').value,
-                timeSlot: document.querySelector('input[name="timeSlot"]:checked').value,
-                fullName: document.getElementById('fullName').value,
-                phone: document.getElementById('whatsappNo').value,
-                address: document.getElementById('address').value,
-                notes: document.getElementById('notes').value
-            };
-
-            try {
-                await fetch('/api/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch(e) {
-                console.error('Backend save failed, redirecting anyway');
-            }
-
-            // 2. Open Mail client
-            const msg = encodeURIComponent(generateMessageBody());
-            fireConfetti();
-            
-            emailBtn.innerHTML = oldText;
-            emailBtn.disabled = false;
-
-            setTimeout(() => {
+            await submitBooking(() => {
+                const msg = encodeURIComponent(generateMessageBody());
                 window.location.href = `mailto:hello@dailyclean.com.ng?subject=New Laundry Booking&body=${msg}`;
-                resetForm();
-            }, 800);
+            });
+            emailBtn.innerHTML = '<i class="fa-solid fa-envelope"></i> Send via Email';
+            emailBtn.disabled = false;
         });
     }
 
@@ -367,30 +297,29 @@ function initBookingForm() {
         currentStep = 1;
         document.getElementById('booking-form').reset();
         updateUI();
-        alert('Thank you! We have received your booking details process request.');
-    }
+    };
 }
 
 // 7. Pricing Toggle
 function initPricingToggle() {
     const toggle = document.getElementById('pricing-switch');
     const cards = document.querySelectorAll('.price-card');
-    if(!toggle) return;
+    if (!toggle) return;
 
     toggle.addEventListener('change', (e) => {
-        if(e.target.checked) {
-            document.getElementById('sub-toggle').style.color = 'var(--primary-blue)';
-            document.getElementById('payg-toggle').style.color = '#666';
+        const paygLabel = document.getElementById('payg-toggle');
+        const subLabel = document.getElementById('sub-toggle');
+        if (e.target.checked) {
+            if (subLabel) subLabel.style.color = 'var(--primary-blue)';
+            if (paygLabel) paygLabel.style.color = '#666';
         } else {
-            document.getElementById('payg-toggle').style.color = 'var(--primary-blue)';
-            document.getElementById('sub-toggle').style.color = '#666';
+            if (paygLabel) paygLabel.style.color = 'var(--primary-blue)';
+            if (subLabel) subLabel.style.color = '#666';
         }
-        
-        // Add a little bounce animation when swiping
         cards.forEach(card => {
             card.style.transform = 'scale(0.95)';
             setTimeout(() => {
-                card.style.transform = card.classList.contains('popular-card') ? 'scale(1.05)' : 'none';
+                card.style.transform = card.classList.contains('popular-card') ? 'scale(1.05)' : '';
             }, 200);
         });
     });
@@ -403,99 +332,73 @@ function initAccordion() {
         header.addEventListener('click', () => {
             const item = header.parentElement;
             const content = item.querySelector('.accordion-content');
-            
-            // Close others
+
             document.querySelectorAll('.accordion-item').forEach(other => {
-                if(other !== item) {
+                if (other !== item) {
                     other.classList.remove('active');
                     other.querySelector('.accordion-content').style.maxHeight = null;
                 }
             });
 
-            // Toggle current
             item.classList.toggle('active');
-            if (item.classList.contains('active')) {
-                content.style.maxHeight = content.scrollHeight + "px";
-            } else {
-                content.style.maxHeight = null;
-            }
+            content.style.maxHeight = item.classList.contains('active') ? content.scrollHeight + 'px' : null;
         });
     });
 }
 
-// 9. Loyalty Form & Confetti
+// 9. Loyalty Form
 function initLoyaltyForm() {
-    const form = document.getElementById('loyalty-form');
-    if(form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = form.querySelector('button');
-            const input = form.querySelector('input[type="email"]');
-            
-            const oldText = btn.innerHTML;
-            btn.innerHTML = 'Saving...';
-            btn.disabled = true;
+    const loyaltySubmit = document.getElementById('loyalty-submit');
+    const loyaltyEmail = document.getElementById('loyalty-email');
+    const loyaltyMsg = document.getElementById('loyalty-msg');
+
+    if (loyaltySubmit && loyaltyEmail) {
+        loyaltySubmit.addEventListener('click', async () => {
+            const email = loyaltyEmail.value.trim();
+            if (!email || !email.includes('@')) {
+                if (loyaltyMsg) loyaltyMsg.textContent = 'Please enter a valid email address.';
+                return;
+            }
+
+            loyaltySubmit.textContent = 'Saving...';
+            loyaltySubmit.disabled = true;
 
             try {
                 const res = await fetch('/api/loyalty', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: input.value })
+                    body: JSON.stringify({ email })
                 });
 
                 if (res.ok) {
                     fireConfetti();
-                    form.innerHTML = `<h3><i class="fa-solid fa-check-circle" style="color:var(--gold-accent);"></i> You're on the list! 🎊</h3>`;
+                    loyaltyEmail.value = '';
+                    if (loyaltyMsg) {
+                        loyaltyMsg.innerHTML = '🎉 You\'re on the list! We\'ll be in touch with exclusive deals.';
+                    }
                 } else {
                     const data = await res.json();
-                    alert(data.error || 'Something went wrong.');
-                    btn.innerHTML = oldText;
-                    btn.disabled = false;
+                    if (loyaltyMsg) loyaltyMsg.textContent = data.error || 'Something went wrong.';
                 }
             } catch (err) {
-                console.error(err);
-                alert('Connection error.');
-                btn.innerHTML = oldText;
-                btn.disabled = false;
+                if (loyaltyMsg) loyaltyMsg.textContent = 'Connection error. Please try again.';
+            } finally {
+                loyaltySubmit.textContent = 'Join Now 🎊';
+                loyaltySubmit.disabled = false;
             }
-        });
-    }
-
-    // Dismiss Whatsapp tooltip
-    const closeTooltip = document.querySelector('.close-tooltip');
-    if(closeTooltip) {
-        closeTooltip.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            document.querySelector('.whatsapp-tooltip').classList.add('dismissed');
         });
     }
 }
 
+// Confetti
 function fireConfetti() {
-    if(typeof confetti !== 'undefined') {
+    if (typeof confetti !== 'undefined') {
         const duration = 3000;
         const end = Date.now() + duration;
-
         (function frame() {
-            confetti({
-                particleCount: 5,
-                angle: 60,
-                spread: 55,
-                origin: { x: 0 },
-                colors: ['#1A7DC4', '#29C4E0', '#F5C842']
-            });
-            confetti({
-                particleCount: 5,
-                angle: 120,
-                spread: 55,
-                origin: { x: 1 },
-                colors: ['#1A7DC4', '#29C4E0', '#F5C842']
-            });
-
-            if (Date.now() < end) {
-                requestAnimationFrame(frame);
-            }
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#1A7DC4', '#29C4E0', '#F5C842'] });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#1A7DC4', '#29C4E0', '#F5C842'] });
+            if (Date.now() < end) requestAnimationFrame(frame);
         }());
     }
 }
