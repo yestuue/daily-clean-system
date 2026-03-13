@@ -506,3 +506,156 @@ input:checked + .slider:before { transform: translateX(26px); }
     .stat-number { font-size: 2.5rem; }
     .price-card { padding: 30px 20px; }
 }
+/* ============================================
+   MOBILE FIXES — Lagos-optimised responsive
+   ============================================ */
+
+/* ── Shared mobile utilities ── */
+@media (max-width: 768px) {
+
+    /* 1. Hero — prevent overflow on narrow screens */
+    .hero { padding-top: 30px; padding-bottom: 100px; }
+    .trust-badge { font-size: 0.78rem; padding: 6px 14px; text-align: center; }
+    .address-pill {
+        font-size: 0.82rem;
+        padding: 8px 16px;
+        white-space: normal;        /* allow wrap instead of overflow */
+        text-align: center;
+    }
+    .hero-buttons { gap: 12px; }
+    .btn-large { padding: 15px 28px; font-size: 1rem; }
+
+    /* 2. Service cards — ensure full-width stacking with comfortable padding */
+    .services-grid { grid-template-columns: 1fr; gap: 20px; }
+    .service-card { padding: 28px 20px; }
+    .card-icon { width: 60px; height: 60px; font-size: 1.5rem; }
+
+    /* 3. Timeline — fix cut-off & icon anchor */
+    .how-it-works { overflow: hidden; }          /* stops horizontal bleed */
+    .timeline {
+        flex-direction: column;
+        align-items: flex-start;
+        max-width: 100%;
+        padding-left: 20px;
+    }
+    .timeline::before {
+        top: 0; bottom: 0;
+        left: 34px;               /* aligns with centre of icon */
+        right: auto;
+        width: 3px;
+        height: 100%;
+        border-top: none;
+        border-left: 3px dashed var(--accent-cyan);
+    }
+    .timeline-item {
+        position: relative;       /* anchors the absolute icon */
+        width: 100%;
+        text-align: left;
+        padding: 0 0 36px 80px;   /* left-pad creates space for icon */
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-icon {
+        position: absolute;
+        left: 0; top: 0;
+        margin: 0;
+        width: 60px; height: 60px;
+        font-size: 1.4rem;
+    }
+    .timeline-content h3 { font-size: 1.05rem; }
+    .timeline-content p  { font-size: 0.9rem; }
+
+    /* 4. Booking form — larger tap targets, no horizontal scroll */
+    .booking-container { padding: 20px 16px; border-radius: 14px; }
+
+    /* Progress steps: scroll horizontally instead of wrapping/overflowing */
+    .booking-progress {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+        padding-bottom: 4px;
+    }
+    .booking-progress::before { display: none; }   /* hide connector line on mobile */
+    .progress-step {
+        font-size: 0.78rem;
+        padding: 6px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Bigger tap targets for checkboxes */
+    .custom-checkbox {
+        padding: 14px 16px;
+        min-height: 56px;
+    }
+    .custom-checkbox .checkmark { width: 24px; height: 24px; }
+
+    /* Radio buttons — full-width pill on mobile */
+    .toggle-group { flex-direction: column; gap: 8px; }
+    .radio-btn span {
+        display: block;
+        width: 100%;
+        padding: 13px 18px;
+        text-align: center;
+    }
+
+    /* Date input — full width, taller hit area */
+    .form-group input[type="date"] {
+        font-size: 1rem;
+        padding: 16px 14px;
+    }
+
+    /* Text inputs & textarea */
+    .form-group input[type="text"],
+    .form-group input[type="tel"],
+    .form-group textarea {
+        font-size: 16px;      /* prevents iOS auto-zoom */
+        padding: 14px 14px;
+    }
+
+    /* Submit buttons full-width on mobile */
+    .submit-buttons { flex-direction: column; width: 100%; }
+    .submit-buttons .btn { width: 100%; justify-content: center; }
+    .form-actions { flex-wrap: wrap; gap: 10px; }
+    .form-actions .btn { flex: 1 1 auto; min-width: 120px; justify-content: center; }
+
+    /* Order summary card */
+    .order-summary-card { padding: 20px 16px; }
+    .summary-item { flex-direction: column; gap: 2px; }
+    .summary-item strong { min-width: unset; }
+
+    /* 5. Stats grid — 2 columns on mobile */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+
+    /* 6. Loyalty form — stack input + button */
+    .loyalty-form { flex-direction: column; gap: 12px; }
+    .loyalty-form input,
+    .loyalty-form button { width: 100%; border-radius: 12px; }
+
+    /* 7. Find Us section */
+    .find-grid { grid-template-columns: 1fr; }
+    .info-card { padding: 30px 20px; }
+
+    /* 8. Pricing cards */
+    .pricing-cards { gap: 20px; }
+    .popular-card { transform: none; }
+
+    /* 9. Ticker — slightly smaller on mobile */
+    .ticker-item { font-size: 0.95rem; }
+
+    /* 10. Footer */
+    .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+}
+
+/* ── Extra small: sub-400px (common low-end Lagos devices) ── */
+@media (max-width: 400px) {
+    .hero-title { font-size: 1.9rem; }
+    .hero-subtitle { font-size: 1rem; }
+    .section-header h2 { font-size: 1.75rem; }
+    .trust-badge { font-size: 0.72rem; }
+    .address-pill { font-size: 0.75rem; }
+    .booking-container { padding: 16px 12px; }
+    .stat-number { font-size: 2rem; }
+    .punch-card { gap: 8px; padding: 20px; }
+    .stamp { width: 48px; height: 48px; font-size: 1.1rem; }
+}

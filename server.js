@@ -1,10 +1,15 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const cors    = require('cors');
 const { Pool } = require('pg');
-const path = require('path');
+const path    = require('path');
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
 
-const app = express();
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('❌ JWT_SECRET is not set in .env');
+
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -12,13 +17,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ✅ DATABASE CONNECTION — reads from .env locally, from Render env var in production
+// DATABASE CONNECTION
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// ✅ Initialize Tables
+// Initialize Tables
 const initializeTables = async () => {
     const client = await pool.connect();
     try {
@@ -35,7 +40,7 @@ const initializeTables = async () => {
                 status TEXT DEFAULT 'Pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            
+
             CREATE TABLE IF NOT EXISTS loyalty_members (
                 id SERIAL PRIMARY KEY,
                 email TEXT UNIQUE,
@@ -52,10 +57,17 @@ const initializeTables = async () => {
         // Seed default admin if table is empty
         const adminCheck = await client.query('SELECT count(*) FROM admin_users');
         if (parseInt(adminCheck.rows[0].count) === 0) {
-            await client.query("INSERT INTO admin_users (username, password) VALUES ('admin', 'dailyclean2025')");
-            console.log('✅ Default admin seeded: admin / dailyclean2025');
+            const hashed = await bcrypt.hash(
+                process.env.ADMIN_DEFAULT_PASSWORD || 'dailyclean2025',
+                12
+            );
+            await client.query(
+                'INSERT INTO admin_users (username, password) VALUES ($1, $2)',
+                ['admin', hashed]
+            );
+            console.log('✅ Default admin seeded.');
         }
-        
+
         console.log('✅ Connected to Supabase. Tables ready.');
     } catch (err) {
         console.error('❌ DB Init Error:', err.message);
@@ -76,9 +88,12 @@ app.post('/api/book', async (req, res) => {
         return res.status(400).json({ error: 'Missing required booking fields.' });
     }
     try {
-        const sql = `INSERT INTO bookings (services, pickup_date, time_slot, full_name, phone, address, notes) 
+        const sql = `INSERT INTO bookings (services, pickup_date, time_slot, full_name, phone, address, notes)
                      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`;
-        const result = await pool.query(sql, [services, date, timeSlot, fullName, phone, address || '', notes || '']);
+        const result = await pool.query(sql, [
+            services, date, timeSlot, fullName, phone,
+            address || '', notes || ''
+        ]);
         res.status(201).json({ message: 'Booking created', bookingId: result.rows[0].id });
     } catch (err) {
         console.error('Book error:', err.message);
@@ -107,28 +122,43 @@ app.post('/api/loyalty', async (req, res) => {
 
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password)
+        return res.status(400).json({ error: 'Username and password required.' });
     try {
         const result = await pool.query(
-            'SELECT id FROM admin_users WHERE username = $1 AND password = $2',
-            [username, password]
+            'SELECT id, password FROM admin_users WHERE username = $1',
+            [username]
         );
-        if (result.rows.length === 0) {
+        if (result.rows.length === 0)
             return res.status(401).json({ error: 'Invalid credentials' });
-        }
-        res.json({ token: 'mock-token-' + result.rows[0].id });
+
+        const match = await bcrypt.compare(password, result.rows[0].password);
+        if (!match)
+            return res.status(401).json({ error: 'Invalid credentials' });
+
+        const token = jwt.sign(
+            { id: result.rows[0].id, username },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+        res.json({ token });
     } catch (err) {
         console.error('Login error:', err.message);
         res.status(500).json({ error: 'Auth error' });
     }
 });
 
-// ✅ Auth middleware — reusable
+// Auth middleware
 const requireAuth = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader || authHeader !== 'Bearer mock-token-1') {
+    if (!authHeader || !authHeader.startsWith('Bearer '))
         return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        req.admin = jwt.verify(authHeader.slice(7), JWT_SECRET);
+        next();
+    } catch {
+        return res.status(401).json({ error: 'Token expired or invalid' });
     }
-    next();
 };
 
 app.get('/api/admin/dashboard', requireAuth, async (req, res) => {

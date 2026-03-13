@@ -12,9 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let token = sessionStorage.getItem('dc_admin_token') || null;
     let allBookings = [];
 
-    function authHeader() {
-        return { 'Authorization': `Bearer ${token}` };
+    // ── POLLING STATE ─────────────────────────────────────────────────────────
+    let pollInterval = null;
+    let activeView = 'dashboard';
+    const POLL_INTERVAL_MS = 30000; // 30 seconds
+
+    function startPolling() {
+        stopPolling();
+        pollInterval = setInterval(() => {
+            if (activeView === 'dashboard') fetchDashboardData(true);
+            if (activeView === 'bookings')  fetchAllBookings(true);
+        }, POLL_INTERVAL_MS);
     }
+
+    function stopPolling() {
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    function authHeader() {
+    return { 'Authorization': `Bearer ${token}` };
+}
 
     const todayEl = document.getElementById('today-date');
     if (todayEl) todayEl.textContent = new Date().toLocaleDateString('en-NG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -52,8 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // LOGOUT
+    // LOGOUT — stop polling before clearing session
     logoutBtn.addEventListener('click', () => {
+        stopPolling(); // ← stop auto-refresh on logout
         sessionStorage.removeItem('dc_admin_token');
         token = null;
         dashboardApp.classList.add('hidden');
@@ -72,6 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.switchView = function(targetView) {
+        activeView = targetView; // ← track which view is visible
+        startPolling();          // ← restart poll timer on every view switch
+
         navLinks.forEach(l => l.classList.remove('active'));
         document.querySelector(`[data-view="${targetView}"]`)?.classList.add('active');
         views.forEach(v => v.classList.remove('active'));
@@ -85,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetView === 'messages') fetchQuickMessages();
     };
 
-    if (refreshBtn) refreshBtn.addEventListener('click', fetchAllBookings);
+    if (refreshBtn) refreshBtn.addEventListener('click', () => fetchAllBookings());
 
     const searchInput = document.getElementById('search-bookings');
     const filterStatus = document.getElementById('filter-status');
@@ -96,9 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loginScreen.classList.add('hidden');
         dashboardApp.classList.remove('hidden');
         fetchDashboardData();
+        startPolling(); // ← begin polling immediately on login
     }
 
     function handleUnauth() {
+        stopPolling(); // ← also stop polling on session expiry
         sessionStorage.removeItem('dc_admin_token');
         token = null;
         dashboardApp.classList.add('hidden');
@@ -107,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // DASHBOARD
-    async function fetchDashboardData() {
+    // silent=true means it was triggered by the poll, not a user action
+    async function fetchDashboardData(silent = false) {
         try {
             const res = await fetch('/api/admin/dashboard', { headers: authHeader() });
             if (res.status === 401) return handleUnauth();
@@ -118,6 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const bRes = await fetch('/api/admin/bookings', { headers: authHeader() });
             const bookings = await bRes.json();
+
+            // ── NEW ORDER DETECTION ───────────────────────────────────────────
+            if (silent && bookings.length > allBookings.length) {
+                flashNewOrderAlert(bookings.length - allBookings.length);
+            }
+            // ─────────────────────────────────────────────────────────────────
+
             allBookings = bookings;
 
             const today = new Date().toISOString().split('T')[0];
@@ -161,17 +193,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ALL BOOKINGS
-    async function fetchAllBookings() {
+    // silent=true suppresses the spinner (used during background polling)
+    async function fetchAllBookings(silent = false) {
         const btn = document.getElementById('refresh-bookings');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
+        if (!silent && btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
         try {
             const res = await fetch('/api/admin/bookings', { headers: authHeader() });
             if (res.status === 401) return handleUnauth();
-            allBookings = await res.json();
+            const fresh = await res.json();
+
+            // ── NEW ORDER DETECTION ───────────────────────────────────────────
+            if (silent && fresh.length > allBookings.length) {
+                flashNewOrderAlert(fresh.length - allBookings.length);
+            }
+            // ─────────────────────────────────────────────────────────────────
+
+            allBookings = fresh;
             renderBookings(allBookings);
         } catch (err) { console.error('Bookings error:', err); }
-        finally { if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh'; }
+        finally {
+            if (!silent && btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh';
+        }
     }
+
+    // ── NEW ORDER FLASH ALERT ─────────────────────────────────────────────────
+    function flashNewOrderAlert(count) {
+        // Flash the refresh button green
+        const btn = document.getElementById('refresh-bookings');
+        if (btn) {
+            btn.style.background = '#10B981';
+            btn.style.color = '#fff';
+            setTimeout(() => { btn.style.background = ''; btn.style.color = ''; }, 2000);
+        }
+
+        // Show a non-blocking toast notification
+        const existing = document.getElementById('new-order-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'new-order-toast';
+        toast.innerHTML = `<i class="fa-solid fa-bell"></i> ${count} new order${count > 1 ? 's' : ''} received!`;
+        Object.assign(toast.style, {
+            position: 'fixed', bottom: '30px', right: '30px',
+            background: '#10B981', color: '#fff',
+            padding: '14px 24px', borderRadius: '50px',
+            fontFamily: 'Poppins, sans-serif', fontWeight: '600',
+            fontSize: '0.95rem', boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+            zIndex: '99999', display: 'flex', alignItems: 'center', gap: '10px',
+            animation: 'slideInToast 0.4s ease'
+        });
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+
+        // Inject keyframe once
+        if (!document.getElementById('toast-style')) {
+            const style = document.createElement('style');
+            style.id = 'toast-style';
+            style.textContent = `@keyframes slideInToast { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`;
+            document.head.appendChild(style);
+        }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     function renderBookings(bookings) {
         const tbody = document.getElementById('all-bookings-list');
@@ -314,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = e.target.getAttribute('data-id');
                 const name = e.target.getAttribute('data-name');
                 const phone = e.target.getAttribute('data-phone');
-                const newStatus = e.target.value.replace(/[^\w\s]/g,'').trim();
+                const newStatus = e.target.value; // clean value — regex removed, not needed
                 try {
                     const res = await fetch(`/api/admin/bookings/${id}/status`, {
                         method: 'PUT',

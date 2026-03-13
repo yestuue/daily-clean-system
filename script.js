@@ -61,17 +61,15 @@ function initScrollLogic() {
         if (scrollProgress) scrollProgress.style.width = scrolled + '%';
     });
 
-    // ✅ FIX: Observer now adds 'visible' class (matches CSS)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target); // stop watching once visible
+                observer.unobserve(entry.target);
             }
         });
     }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
 
-    // ✅ FIX: Observe all reveal/slide-right elements
     document.querySelectorAll('.reveal, .slide-right').forEach(el => {
         observer.observe(el);
     });
@@ -240,29 +238,63 @@ function initBookingForm() {
 *Notes:* ${notes || 'None'}`;
     };
 
+    // ✅ FIXED: Block confetti on failure, show WhatsApp fallback
     const submitBooking = async (callback) => {
         const payload = {
             services: Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value).join(', '),
-            date: document.getElementById('pickup-date').value,
+            date:     document.getElementById('pickup-date').value,
             timeSlot: document.querySelector('input[name="timeSlot"]:checked').value,
             fullName: document.getElementById('fullName').value,
-            phone: document.getElementById('whatsappNo').value,
-            address: document.getElementById('address').value,
-            notes: document.getElementById('notes').value
+            phone:    document.getElementById('whatsappNo').value,
+            address:  document.getElementById('address').value,
+            notes:    document.getElementById('notes').value
         };
 
+        // Remove any previous error banner
+        document.getElementById('booking-api-error')?.remove();
+
+        let savedOk = false;
         try {
-            await fetch('/api/book', {
+            const res = await fetch('/api/book', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-        } catch (e) {
-            console.error('Backend save failed, continuing anyway');
+            if (res.ok) {
+                savedOk = true;
+            } else {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Server error ${res.status}`);
+            }
+        } catch (err) {
+            // Show inline error banner with WhatsApp fallback
+            const errorBanner = document.createElement('div');
+            errorBanner.id = 'booking-api-error';
+            errorBanner.style.cssText =
+                'background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:20px;';
+            errorBanner.innerHTML = `
+                <p style="color:#b91c1c;font-weight:600;margin-bottom:10px;">
+                    ⚠️ Could not save your booking online (${err.message}).
+                </p>
+                <p style="color:#555;font-size:0.9rem;margin-bottom:12px;">
+                    No problem — tap below to send your order directly via WhatsApp instead.
+                </p>
+                <a href="https://wa.me/2347084588119?text=${encodeURIComponent(generateMessageBody())}"
+                   target="_blank"
+                   class="btn btn-whatsapp"
+                   style="display:inline-flex;gap:8px;align-items:center;">
+                   <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
+                </a>`;
+
+            const submitArea = document.querySelector('#step-4 .form-actions');
+            submitArea?.parentNode.insertBefore(errorBanner, submitArea);
+            return; // ← no confetti on failure
         }
 
-        fireConfetti();
-        setTimeout(() => { callback(); resetForm(); }, 800);
+        if (savedOk) {
+            fireConfetti();
+            setTimeout(() => { callback(); resetForm(); }, 800);
+        }
     };
 
     const whatsappBtn = document.getElementById('submit-whatsapp');
