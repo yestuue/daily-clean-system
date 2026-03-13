@@ -3,180 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Clean - Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>Daily Clean — Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-    <div id="login-screen" class="login-screen">
-        <div class="login-box">
-            <div class="login-header">
-                <img src="logo.png" alt="Daily Clean Logo" style="height: 40px; margin-bottom: 15px;">
-                <h2>Admin Login</h2>
-                <p>Enter your credentials to access the portal</p>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+    <div class="login-card">
+        <img src="logo.png" alt="Daily Clean" class="login-logo">
+        <h2>Admin Portal</h2>
+        <p class="login-sub">Daily Clean Management System</p>
+        <form id="login-form">
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="username" placeholder="Username" required autocomplete="off">
             </div>
-            <form id="login-form">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="username" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" required autocomplete="current-password">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Login to Dashboard</button>
-            </form>
-            <div id="login-error" class="error-msg"></div>
-            <p class="login-hint">Default: admin / dailyclean2025</p>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <p id="login-error" class="login-error"></p>
+            <button type="submit" class="btn-login">Login to Dashboard</button>
+        </form>
+    </div>
+</div>
+
+<!-- DASHBOARD APP -->
+<div id="dashboard-app" class="dashboard-app hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <img src="logo.png" alt="Daily Clean" class="sidebar-logo">
+            <span>Admin Panel</span>
         </div>
-    </div>
+        <nav class="sidebar-nav">
+            <a href="#" data-view="dashboard" class="active">
+                <i class="fa-solid fa-gauge"></i> Dashboard
+            </a>
+            <a href="#" data-view="bookings">
+                <i class="fa-solid fa-basket-shopping"></i> Bookings
+            </a>
+            <a href="#" data-view="customers">
+                <i class="fa-solid fa-users"></i> Loyalty Members
+            </a>
+            <a href="#" data-view="analytics">
+                <i class="fa-solid fa-chart-line"></i> Analytics
+            </a>
+            <a href="#" data-view="messages">
+                <i class="fa-solid fa-message"></i> Quick Messages
+            </a>
+            <a href="#" data-view="settings">
+                <i class="fa-solid fa-gear"></i> Settings
+            </a>
+        </nav>
+        <button id="logout-btn" class="btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+    </aside>
 
-    <div id="dashboard-app" class="dashboard-app hidden">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <img src="logo.png" alt="DC Logo" style="height: 30px;">
-                <span class="brand-text">Admin Panel</span>
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Top Bar -->
+        <div class="topbar">
+            <h1 id="page-title">Dashboard Overview</h1>
+            <div class="topbar-right">
+                <div class="online-badge">
+                    <span class="online-dot"></span> Online
+                </div>
+                <div class="admin-info">
+                    <span>Daily Clean Admin</span>
+                    <div class="admin-avatar"><i class="fa-solid fa-user"></i></div>
+                </div>
             </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-link active" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="#" class="nav-link" data-view="bookings"><i class="fa-solid fa-clipboard-list"></i> Bookings</a>
-                <a href="#" class="nav-link" data-view="customers"><i class="fa-solid fa-users"></i> Loyalty Members</a>
-            </nav>
-            <div class="sidebar-footer">
-                <button id="logout-btn" class="btn-logout"><i class="fa-solid fa-power-off"></i> Logout</button>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div class="view active" id="view-dashboard">
+
+            <!-- Stat Cards -->
+            <div class="stats-row">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fa-solid fa-basket-shopping"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-total-bookings">0</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Pending Orders</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fa-solid fa-award"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-loyalty">0</div>
+                        <div class="stat-label">Loyalty Members</div>
+                    </div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-completed">0</div>
+                        <div class="stat-label">Completed Today</div>
+                    </div>
+                </div>
             </div>
-        </aside>
 
-        <main class="main-content">
-            <header class="topbar">
-                <div class="topbar-left">
-                    <h1 id="page-title">Dashboard Overview</h1>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="actions-grid">
+                    <button class="action-btn" onclick="sendBroadcast()">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span>Broadcast to Customers</span>
+                    </button>
+                    <button class="action-btn" onclick="exportBookings()">
+                        <i class="fa-solid fa-file-export"></i>
+                        <span>Export Bookings CSV</span>
+                    </button>
+                    <button class="action-btn" onclick="switchView('bookings')">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>View All Orders</span>
+                    </button>
+                    <button class="action-btn" onclick="window.open('/', '_blank')">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>View Live Site</span>
+                    </button>
                 </div>
-                <div class="topbar-right">
-                    <div id="connection-status" class="status-indicator">
-                        <span class="dot"></span> Online
-                    </div>
-                    <div class="user-profile">
-                        <span>Daily Clean Admin</span>
-                        <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="content-wrapper">
-                
-                <div id="view-dashboard" class="view active">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-blue"><i class="fa-solid fa-receipt"></i></div>
-                            <div class="stat-info">
-                                <h3>Total Bookings</h3>
-                                <p id="stat-total-bookings" class="stat-number">...</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon bg-orange"><i class="fa-solid fa-clock"></i></div>
-                            <div class="stat-info">
-                                <h3>Pending Orders</h3>
-                                <p id="stat-pending" class="stat-number">...</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon bg-green"><i class="fa-solid fa-award"></i></div>
-                            <div class="stat-info">
-                                <h3>Loyalty Members</h3>
-                                <p id="stat-loyalty" class="stat-number">...</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card mt-20">
-                        <div class="card-header space-between">
-                            <h3>Live Booking Activity</h3>
-                            <span class="badge">Real-time</span>
-                        </div>
-                        <div class="card-body">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Customer</th>
-                                        <th>Services</th>
-                                        <th>Created</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recent-bookings-list">
-                                    <tr><td colspan="5" class="text-center">Loading live data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-bookings" class="view">
-                    <div class="card overflow-visible">
-                        <div class="card-header space-between">
-                            <div>
-                                <h3>Order Management</h3>
-                                <p class="card-subtitle">Manage statuses and view details</p>
-                            </div>
-                            <button id="refresh-bookings" class="btn btn-outline btn-sm"><i class="fa-solid fa-rotate"></i> Refresh List</button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID / Time</th>
-                                            <th>Customer Details</th>
-                                            <th>Services & Preference</th>
-                                            <th>Address & Notes</th>
-                                            <th>Status Control</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="all-bookings-list">
-                                        </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-customers" class="view">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Loyalty Program Database</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-info">
-                                <i class="fa-solid fa-info-circle"></i> These customers have signed up for your newsletter and point system via the landing page.
-                            </div>
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Email Address</th>
-                                        <th>Joined On</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="loyalty-list">
-                                    <tr>
-                                        <td colspan="4" class="text-center">Synchronizing database...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-        </main>
-    </div>
 
-    <script src="admin-script.js"></script>
+            <!-- Recent Bookings Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Live Booking Activity</h3>
+                    <span class="badge-live">Real-time</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Services</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-bookings-list">
+                        <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="card" style="margin-top:24px;">
+                <div class="card-header">
+                    <h3>Today's Pickups</h3>
+                    <span id="today-date" class="today-label"></span>
+                </div>
+                <div id="todays-pickups">
+                    <div class="empty-state">No pickups scheduled for today.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKINGS VIEW -->
+        <div class="view" id="view-bookings">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Order Management</h3>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <input type="text" id="search-bookings" class="search-input" placeholder="🔍 Search by name or ID...">
+                        <select id="filter-status" class="filter-select">
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <button id="refresh-bookings" class="btn-refresh">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                        <button class="btn-export" onclick="exportBookings()">
+                            <i class="fa-solid fa-download"></i> CSV
+                        </button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID / Time</th>
+                            <th>Customer</th>
+                            <th>Services & Schedule</th>
+                            <th>Address & Notes</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-bookings-list">
+                        <tr><td colspan="5" class="empty-state">Loading bookings...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- LOYALTY MEMBERS VIEW -->
+        <div class="view" id="view-customers">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Loyalty Members</h3>
+                    <button class="btn-export" onclick="exportLoyalty()">
+                        <i class="fa-solid fa-download"></i> Export CSV
+                    </button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loyalty-list">
+                        <tr><td colspan="4" class="empty-state">Loading members...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ANALYTICS VIEW -->
+        <div class="view" id="view-analytics">
+            <div class="stats-row">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="ana-total">0</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="ana-delivered">0</div>
+                        <div class="stat-label">Delivered</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="ana-processing">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="ana-cancelled">0</div>
+                        <div class="stat-label">Cancelled</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:24px;">
+                <div class="card-header"><h3>Services Breakdown</h3></div>
+                <div id="services-breakdown" class="services-breakdown"></div>
+            </div>
+
+            <div class="card" style="margin-top:24px;">
+                <div class="card-header"><h3>Recent Booking Timeline</h3></div>
+                <div id="booking-timeline" class="booking-timeline"></div>
+            </div>
+        </div>
+
+        <!-- QUICK MESSAGES VIEW -->
+        <div class="view" id="view-messages">
+            <div class="card">
+                <div class="card-header"><h3>Send WhatsApp Messages</h3></div>
+                <div class="messages-panel">
+                    <p class="messages-intro">Select a customer and send a quick WhatsApp update:</p>
+
+                    <div class="message-templates">
+                        <h4>Message Templates</h4>
+                        <div class="templates-grid">
+                            <div class="template-card" onclick="setTemplate('ready')">
+                                <i class="fa-solid fa-check-circle" style="color:#10B981"></i>
+                                <span>Order Ready</span>
+                            </div>
+                            <div class="template-card" onclick="setTemplate('pickup')">
+                                <i class="fa-solid fa-motorcycle" style="color:#1A7DC4"></i>
+                                <span>Rider On The Way</span>
+                            </div>
+                            <div class="template-card" onclick="setTemplate('delivered')">
+                                <i class="fa-solid fa-house-circle-check" style="color:#8B5CF6"></i>
+                                <span>Delivered</span>
+                            </div>
+                            <div class="template-card" onclick="setTemplate('delay')">
+                                <i class="fa-solid fa-clock" style="color:#F59E0B"></i>
+                                <span>Slight Delay</span>
+                            </div>
+                            <div class="template-card" onclick="setTemplate('promo')">
+                                <i class="fa-solid fa-percent" style="color:#EF4444"></i>
+                                <span>Promo Offer</span>
+                            </div>
+                            <div class="template-card" onclick="setTemplate('custom')">
+                                <i class="fa-solid fa-pen" style="color:#0D3B6E"></i>
+                                <span>Custom Message</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message-composer">
+                        <div class="form-row">
+                            <label>Customer Phone (with country code):</label>
+                            <input type="tel" id="msg-phone" placeholder="e.g. 2348012345678" class="msg-input">
+                        </div>
+                        <div class="form-row">
+                            <label>Customer Name:</label>
+                            <input type="text" id="msg-name" placeholder="e.g. Adaeze" class="msg-input">
+                        </div>
+                        <div class="form-row">
+                            <label>Message:</label>
+                            <textarea id="msg-body" rows="5" class="msg-textarea" placeholder="Select a template above or write your message..."></textarea>
+                        </div>
+                        <button class="btn-send-wa" onclick="sendWhatsApp()">
+                            <i class="fa-brands fa-whatsapp"></i> Send via WhatsApp
+                        </button>
+                    </div>
+
+                    <!-- Recent orders for quick messaging -->
+                    <div style="margin-top:30px;">
+                        <h4>Click a customer to message them:</h4>
+                        <div id="quick-msg-list" style="margin-top:15px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div class="view" id="view-settings">
+            <div class="card">
+                <div class="card-header"><h3>Business Settings</h3></div>
+                <div class="settings-panel">
+                    <div class="setting-group">
+                        <h4><i class="fa-solid fa-store"></i> Business Info</h4>
+                        <div class="setting-item">
+                            <label>Business Name</label>
+                            <input type="text" value="Daily Clean" class="setting-input" readonly>
+                        </div>
+                        <div class="setting-item">
+                            <label>WhatsApp Number</label>
+                            <input type="text" value="2347084588119" class="setting-input" readonly>
+                        </div>
+                        <div class="setting-item">
+                            <label>Address</label>
+                            <input type="text" value="No 33 Ayodele Street, Ikate Surulere, Lagos" class="setting-input" readonly>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4><i class="fa-solid fa-link"></i> Quick Links</h4>
+                        <div class="links-list">
+                            <a href="/" target="_blank" class="setting-link">
+                                <i class="fa-solid fa-globe"></i> View Live Website
+                            </a>
+                            <a href="https://wa.me/2347084588119" target="_blank" class="setting-link">
+                                <i class="fa-brands fa-whatsapp"></i> Open WhatsApp
+                            </a>
+                            <a href="https://app.supabase.com" target="_blank" class="setting-link">
+                                <i class="fa-solid fa-database"></i> Supabase Database
+                            </a>
+                            <a href="https://dashboard.render.com" target="_blank" class="setting-link">
+                                <i class="fa-solid fa-server"></i> Render Hosting
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4><i class="fa-solid fa-circle-info"></i> System Info</h4>
+                        <div class="system-info">
+                            <div class="info-row"><span>Platform</span><span>Node.js + PostgreSQL</span></div>
+                            <div class="info-row"><span>Hosting</span><span>Render.com</span></div>
+                            <div class="info-row"><span>Database</span><span>Supabase (PostgreSQL)</span></div>
+                            <div class="info-row"><span>Version</span><span>1.0.0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="admin-script.js"></script>
 </body>
 </html>
